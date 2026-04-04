@@ -80,4 +80,4 @@ Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`SalesAI running at http://localhost:${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`SalesAI running at http://0.0.0.0:${PORT}`));
