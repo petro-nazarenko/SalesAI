@@ -8,7 +8,11 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'{len\\(d[\\\\\"questions\\\\\"]\\)} questions OK'\\)\")",
+      "Bash(curl -s http://localhost:3000/api/results)",
+      "Bash(curl -s -X POST http://localhost:3000/api/save -H 'Content-Type: application/json' -d '{\"name\":\"Test Candidate\",\"result\":{\"score\":78,\"recommendation\":\"Hire\",\"dimension_scores\":{\"resilience\":80,\"drive\":75,\"process\":70,\"communication\":85,\"closing\":78}}}')",
+      "Bash(python3 -c \"import sys,json; rows=json.load\\(sys.stdin\\); print\\(f'{len\\(rows\\)} row\\(s\\), first: {rows[0][\\\\\"name\\\\\"]} score={rows[0][\\\\\"score\\\\\"]}'\\)\" kill %1)"
     ]
   }
 }

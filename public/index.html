@@ -23,6 +23,21 @@
       padding: 40px 20px 80px;
     }
 
+    .nav {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .nav a {
+      color: #60a5fa;
+      font-size: 0.85rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav a:hover { text-decoration: underline; }
+
     .header {
       text-align: center;
       margin-bottom: 48px;
@@ -97,11 +112,7 @@
       font-family: inherit;
     }
 
-    textarea:focus {
-      outline: none;
-      border-color: #60a5fa;
-    }
-
+    textarea:focus { outline: none; border-color: #60a5fa; }
     textarea::placeholder { color: #4a5568; }
 
     .char-count {
@@ -133,6 +144,44 @@
 
     .btn-primary:hover:not(:disabled) { opacity: 0.9; }
 
+    /* Name prompt */
+    .name-card {
+      background: #1a1f2e;
+      border: 1px solid #2d3448;
+      border-radius: 16px;
+      padding: 40px 32px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .name-card h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .name-card p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .name-input {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3448;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 1rem;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .name-input:focus { outline: none; border-color: #60a5fa; }
+    .name-input::placeholder { color: #4a5568; }
+
     /* Results */
     .result-card {
       background: #1a1f2e;
@@ -140,6 +189,14 @@
       border-radius: 16px;
       padding: 32px;
       margin-bottom: 24px;
+    }
+
+    .result-candidate {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
     }
 
     .score-ring {
@@ -196,22 +253,11 @@
       margin-bottom: 20px;
     }
 
-    .tag {
-      padding: 4px 12px;
-      border-radius: 99px;
-      font-size: 0.82rem;
-    }
-
+    .tag { padding: 4px 12px; border-radius: 99px; font-size: 0.82rem; }
     .tag-strength { background: #0d2b1f; color: #6ee7b7; border: 1px solid #064e3b; }
     .tag-concern  { background: #2b0d0d; color: #fca5a5; border: 1px solid #4c1414; }
 
-    .dims {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .dim-item { }
+    .dims { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .dim-label {
       font-size: 0.8rem;
@@ -221,18 +267,8 @@
       justify-content: space-between;
     }
 
-    .dim-bar {
-      background: #0f1117;
-      border-radius: 99px;
-      height: 6px;
-      overflow: hidden;
-    }
-
-    .dim-fill {
-      height: 100%;
-      border-radius: 99px;
-      background: linear-gradient(90deg, #60a5fa, #a78bfa);
-    }
+    .dim-bar { background: #0f1117; border-radius: 99px; height: 6px; overflow: hidden; }
+    .dim-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #60a5fa, #a78bfa); }
 
     .error-box {
       background: #2b0d0d;
@@ -244,10 +280,7 @@
       font-size: 0.9rem;
     }
 
-    .loading {
-      text-align: center;
-      padding: 60px 20px;
-    }
+    .loading { text-align: center; padding: 60px 20px; }
 
     .spinner {
       width: 44px;
@@ -260,7 +293,6 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .loading p { color: #64748b; font-size: 0.9rem; }
 
     .btn-restart {
@@ -271,6 +303,13 @@
     }
 
     .btn-restart:hover { background: #2d3448; color: #e2e8f0; }
+
+    .saved-notice {
+      text-align: center;
+      font-size: 0.82rem;
+      color: #6ee7b7;
+      margin-top: 12px;
+    }
 
     @media (max-width: 480px) {
       .dims { grid-template-columns: 1fr; }
@@ -305,13 +344,17 @@ function DimBar({ label, value }) {
   );
 }
 
+// Screens: "form" | "scoring" | "name" | "result"
 function App() {
-  const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState([]);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [loadingQ, setLoadingQ] = useState(true);
+  const [questions, setQuestions]   = useState([]);
+  const [answers, setAnswers]       = useState([]);
+  const [screen, setScreen]         = useState("form");
+  const [pendingResult, setPending] = useState(null);
+  const [candidateName, setName]    = useState("");
+  const [result, setResult]         = useState(null);
+  const [error, setError]           = useState(null);
+  const [loadingQ, setLoadingQ]     = useState(true);
+  const [saved, setSaved]           = useState(false);
 
   useEffect(() => {
     fetch("/api/questions")
@@ -322,7 +365,7 @@ function App() {
         setLoadingQ(false);
       })
       .catch(() => {
-        setError("Failed to load questions. Is the server running?");
+        setError("Failed to load questions.");
         setLoadingQ(false);
       });
   }, []);
@@ -333,7 +376,7 @@ function App() {
 
   async function handleSubmit() {
     setError(null);
-    setLoading(true);
+    setScreen("scoring");
     try {
       const res = await fetch("/api/score", {
         method: "POST",
@@ -342,37 +385,57 @@ function App() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error");
-      setResult(data);
+      setPending(data);
+      setScreen("name");
     } catch (e) {
       setError(e.message);
-    } finally {
-      setLoading(false);
+      setScreen("form");
     }
   }
 
+  async function handleSave() {
+    if (!candidateName.trim()) return;
+    try {
+      await fetch("/api/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: candidateName.trim(), result: pendingResult }),
+      });
+      setSaved(true);
+    } catch (_) {}
+    setResult(pendingResult);
+    setScreen("result");
+  }
+
   function handleRestart() {
-    setResult(null);
+    setScreen("form");
     setAnswers(new Array(questions.length).fill(""));
+    setResult(null);
+    setPending(null);
+    setName("");
     setError(null);
+    setSaved(false);
   }
 
   if (loadingQ) return (
     <div className="container">
-      <div className="loading">
-        <div className="spinner" />
-        <p>Loading assessment…</p>
-      </div>
+      <div className="loading"><div className="spinner" /><p>Loading assessment…</p></div>
     </div>
   );
 
   return (
     <div className="container">
+      <div className="nav">
+        <a href="/results.html">View All Results →</a>
+      </div>
+
       <div className="header">
         <h1>SalesAI Assessment</h1>
         <p>SDR Candidate Evaluation — 5 Questions</p>
       </div>
 
-      {!result ? (
+      {/* FORM */}
+      {screen === "form" && (
         <>
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${progress}%` }} />
@@ -397,24 +460,51 @@ function App() {
             </div>
           ))}
 
+          <button className="btn btn-primary" disabled={!allFilled} onClick={handleSubmit}>
+            Submit & Score ({filled}/{questions.length} answered)
+          </button>
+        </>
+      )}
+
+      {/* SCORING */}
+      {screen === "scoring" && (
+        <div className="loading">
+          <div className="spinner" />
+          <p>AI is evaluating responses…</p>
+        </div>
+      )}
+
+      {/* NAME PROMPT */}
+      {screen === "name" && (
+        <div className="name-card">
+          <h2>Assessment complete</h2>
+          <p>Enter the candidate's name to save and view results.</p>
+          <input
+            className="name-input"
+            type="text"
+            placeholder="Full name (e.g. John Smith)"
+            value={candidateName}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSave()}
+            autoFocus
+          />
           <button
             className="btn btn-primary"
-            disabled={!allFilled || loading}
-            onClick={handleSubmit}
+            disabled={!candidateName.trim()}
+            onClick={handleSave}
           >
-            {loading ? "Analyzing…" : `Submit & Score (${filled}/${questions.length} answered)`}
+            Save & View Results
           </button>
+        </div>
+      )}
 
-          {loading && (
-            <div className="loading" style={{ paddingTop: 40 }}>
-              <div className="spinner" />
-              <p>AI is evaluating responses…</p>
-            </div>
-          )}
-        </>
-      ) : (
+      {/* RESULT */}
+      {screen === "result" && result && (
         <>
           <div className="result-card">
+            {candidateName && (
+              <div className="result-candidate">Candidate: {candidateName}</div>
+            )}
             <div className="score-ring">
               <div className="score-number">{result.score}</div>
               <div className="score-label">Overall Score / 100</div>
@@ -461,6 +551,7 @@ function App() {
             )}
           </div>
 
+          {saved && <div className="saved-notice">Saved to database</div>}
           {error && <div className="error-box">{error}</div>}
 
           <button className="btn btn-restart" onClick={handleRestart}>

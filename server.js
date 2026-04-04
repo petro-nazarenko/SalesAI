@@ -1,5 +1,6 @@
 const express = require("express");
 const OpenAI = require("openai").default;
+const Database = require("better-sqlite3");
 const path = require("path");
 
 const app = express();
@@ -7,6 +8,27 @@ const client = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
 });
+
+const db = new Database(process.env.DB_PATH || path.join(__dirname, "assessments.db"));
+db.exec(`
+  CREATE TABLE IF NOT EXISTS assessments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    date TEXT NOT NULL,
+    score INTEGER,
+    recommendation TEXT,
+    resilience INTEGER,
+    drive INTEGER,
+    process INTEGER,
+    communication INTEGER,
+    closing INTEGER
+  )
+`);
+
+const insertStmt = db.prepare(`
+  INSERT INTO assessments (name, date, score, recommendation, resilience, drive, process, communication, closing)
+  VALUES (@name, @date, @score, @recommendation, @resilience, @drive, @process, @communication, @closing)
+`);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -77,6 +99,30 @@ Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
     console.error("Scoring error:", err.message);
     res.status(500).json({ error: "Scoring failed. Check GROQ_API_KEY." });
   }
+});
+
+app.post("/api/save", (req, res) => {
+  const { name, result } = req.body;
+  if (!name || !result) return res.status(400).json({ error: "name and result required." });
+
+  const ds = result.dimension_scores || {};
+  insertStmt.run({
+    name: name.trim(),
+    date: new Date().toISOString(),
+    score: result.score,
+    recommendation: result.recommendation,
+    resilience: ds.resilience ?? null,
+    drive: ds.drive ?? null,
+    process: ds.process ?? null,
+    communication: ds.communication ?? null,
+    closing: ds.closing ?? null,
+  });
+  res.json({ ok: true });
+});
+
+app.get("/api/results", (req, res) => {
+  const rows = db.prepare("SELECT * FROM assessments ORDER BY id DESC").all();
+  res.json(rows);
 });
 
 const PORT = process.env.PORT || 3000;

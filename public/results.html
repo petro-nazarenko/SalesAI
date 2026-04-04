@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SalesAI — All Results</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .nav a {
+      color: #60a5fa;
+      font-size: 0.85rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav a:hover { text-decoration: underline; }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header p { color: #94a3b8; margin-top: 8px; font-size: 0.95rem; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid #2d3448;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    thead tr { background: #1a1f2e; }
+
+    th {
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-top: 1px solid #1e2537;
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: #141829; }
+
+    td {
+      padding: 14px 16px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .name { font-weight: 600; color: #e2e8f0; }
+
+    .score {
+      font-weight: 700;
+      font-size: 1.05rem;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .badge-strong  { background: #064e3b; color: #6ee7b7; }
+    .badge-hire    { background: #1e3a5f; color: #93c5fd; }
+    .badge-consider { background: #3b2f10; color: #fcd34d; }
+    .badge-reject  { background: #4c1414; color: #fca5a5; }
+
+    .dim { color: #94a3b8; font-size: 0.82rem; }
+
+    .date { color: #64748b; font-size: 0.82rem; }
+
+    .empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: #4a5568;
+    }
+
+    .empty p { margin-bottom: 16px; }
+
+    .empty a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .loading { text-align: center; padding: 80px 20px; color: #64748b; }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #2d3448;
+      border-top-color: #60a5fa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .count { color: #64748b; font-size: 0.82rem; margin-bottom: 12px; text-align: right; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="/">← New Assessment</a>
+  </div>
+
+  <div class="header">
+    <h1>All Assessments</h1>
+    <p>SDR Candidate Results</p>
+  </div>
+
+  <div id="app"></div>
+</div>
+
+<script>
+const BADGE = {
+  "Strong Hire": "badge-strong",
+  "Hire": "badge-hire",
+  "Consider": "badge-consider",
+  "Reject": "badge-reject",
+};
+
+function fmt(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+    + " " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+
+function render(rows) {
+  const app = document.getElementById("app");
+
+  if (!rows.length) {
+    app.innerHTML = `<div class="empty"><p>No assessments yet.</p><a href="/">Run the first one →</a></div>`;
+    return;
+  }
+
+  const dimCols = ["resilience", "drive", "process", "communication", "closing"];
+
+  const thead = `<thead><tr>
+    <th>#</th>
+    <th>Candidate</th>
+    <th>Score</th>
+    <th>Recommendation</th>
+    ${dimCols.map(d => `<th>${d.charAt(0).toUpperCase() + d.slice(1)}</th>`).join("")}
+    <th>Date</th>
+  </tr></thead>`;
+
+  const tbody = rows.map((r, i) => `
+    <tr>
+      <td class="date">${rows.length - i}</td>
+      <td class="name">${esc(r.name)}</td>
+      <td class="score">${r.score ?? "—"}</td>
+      <td><span class="badge ${BADGE[r.recommendation] || "badge-consider"}">${esc(r.recommendation)}</span></td>
+      ${dimCols.map(d => `<td class="dim">${r[d] ?? "—"}</td>`).join("")}
+      <td class="date">${fmt(r.date)}</td>
+    </tr>`).join("");
+
+  app.innerHTML = `
+    <div class="count">${rows.length} assessment${rows.length !== 1 ? "s" : ""}</div>
+    <div class="table-wrap"><table>${thead}<tbody>${tbody}</tbody></table></div>`;
+}
+
+function esc(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+document.getElementById("app").innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading…</p></div>`;
+
+fetch("/api/results")
+  .then(r => r.json())
+  .then(render)
+  .catch(() => {
+    document.getElementById("app").innerHTML = `<div class="empty"><p>Failed to load results.</p></div>`;
+  });
+</script>
+</body>
+</html>
