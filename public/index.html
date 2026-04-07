@@ -311,6 +311,80 @@
       margin-top: 12px;
     }
 
+    .api-key-section {
+      background: #1a1f2e;
+      border: 1px solid #2d3448;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+
+    .api-key-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .api-key-link {
+      color: #60a5fa;
+      font-size: 0.8rem;
+      font-weight: 400;
+      text-decoration: none;
+    }
+
+    .api-key-link:hover { text-decoration: underline; }
+
+    .api-key-input {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3448;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.92rem;
+      padding: 12px 16px;
+      font-family: monospace;
+      letter-spacing: 0.03em;
+      transition: border-color 0.2s;
+    }
+
+    .api-key-input:focus { outline: none; border-color: #60a5fa; }
+    .api-key-input::placeholder { color: #4a5568; font-family: inherit; letter-spacing: 0; }
+
+    .api-key-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 0.78rem;
+      padding: 2px 4px;
+      font-family: inherit;
+    }
+
+    .api-key-toggle:hover { color: #94a3b8; }
+
+    .api-key-wrap {
+      position: relative;
+    }
+
+    .no-key-notice {
+      text-align: center;
+      color: #fcd34d;
+      background: #3b2f10;
+      border: 1px solid #78500a;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+    }
+
     @media (max-width: 480px) {
       .dims { grid-template-columns: 1fr; }
       .score-number { font-size: 3rem; }
@@ -355,6 +429,8 @@ function App() {
   const [error, setError]           = useState(null);
   const [loadingQ, setLoadingQ]     = useState(true);
   const [saved, setSaved]           = useState(false);
+  const [groqKey, setGroqKey]       = useState(() => sessionStorage.getItem("groqApiKey") || "");
+  const [showKey, setShowKey]       = useState(false);
 
   useEffect(() => {
     fetch("/api/questions")
@@ -372,7 +448,16 @@ function App() {
 
   const filled = answers.filter(a => a.trim().length >= 20).length;
   const allFilled = questions.length > 0 && filled === questions.length;
+  const trimmedKey = groqKey.trim();
+  const hasKey = trimmedKey.length > 0 && trimmedKey.startsWith("gsk_");
+  const keyInvalid = trimmedKey.length > 0 && !trimmedKey.startsWith("gsk_");
   const progress = questions.length ? (filled / questions.length) * 100 : 0;
+
+  function handleKeyChange(e) {
+    const val = e.target.value;
+    setGroqKey(val);
+    sessionStorage.setItem("groqApiKey", val);
+  }
 
   async function handleSubmit() {
     setError(null);
@@ -381,7 +466,7 @@ function App() {
       const res = await fetch("/api/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers }),
+        body: JSON.stringify({ answers, groqApiKey: groqKey.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error");
@@ -437,6 +522,45 @@ function App() {
       {/* FORM */}
       {screen === "form" && (
         <>
+          <div className="api-key-section">
+            <div className="api-key-label">
+              Enter your Groq API key
+              <a
+                className="api-key-link"
+                href="https://console.groq.com/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Get free key at console.groq.com/keys ↗
+              </a>
+            </div>
+            <div className="api-key-wrap">
+              <input
+                className="api-key-input"
+                type={showKey ? "text" : "password"}
+                placeholder="gsk_…"
+                value={groqKey}
+                onChange={handleKeyChange}
+                autoComplete="off"
+                spellCheck="false"
+                style={keyInvalid ? { borderColor: "#f87171", paddingRight: "60px" } : { paddingRight: "60px" }}
+              />
+              <button
+                type="button"
+                className="api-key-toggle"
+                onClick={() => setShowKey(v => !v)}
+                tabIndex={-1}
+              >
+                {showKey ? "Hide" : "Show"}
+              </button>
+            </div>
+            {keyInvalid && (
+              <div style={{ color: "#f87171", fontSize: "0.78rem", marginTop: "6px" }}>
+                Key should start with <code>gsk_</code>
+              </div>
+            )}
+          </div>
+
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${progress}%` }} />
           </div>
@@ -460,7 +584,13 @@ function App() {
             </div>
           ))}
 
-          <button className="btn btn-primary" disabled={!allFilled} onClick={handleSubmit}>
+          {!hasKey && (
+            <div className="no-key-notice">
+              Add your Groq key above to enable AI scoring
+            </div>
+          )}
+
+          <button className="btn btn-primary" disabled={!allFilled || !hasKey} onClick={handleSubmit}>
             Submit & Score ({filled}/{questions.length} answered)
           </button>
         </>
