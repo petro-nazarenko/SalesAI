@@ -4,10 +4,12 @@ const Database = require("better-sqlite3");
 const path = require("path");
 
 const app = express();
-const client = new OpenAI({
-  apiKey: process.env.GROQ_API_KEY,
-  baseURL: "https://api.groq.com/openai/v1",
-});
+const serverClient = process.env.GROQ_API_KEY
+  ? new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: "https://api.groq.com/openai/v1",
+    })
+  : null;
 
 const db = new Database(process.env.DB_PATH || path.join(__dirname, "assessments.db"));
 db.exec(`
@@ -46,10 +48,22 @@ app.get("/api/questions", (req, res) => {
 });
 
 app.post("/api/score", async (req, res) => {
-  const { answers } = req.body;
+  const { answers, groqApiKey } = req.body;
 
   if (!Array.isArray(answers) || answers.length !== QUESTIONS.length) {
     return res.status(400).json({ error: "Provide exactly 5 answers." });
+  }
+
+  const userKey = typeof groqApiKey === "string" ? groqApiKey.trim() : "";
+  if (userKey && !userKey.startsWith("gsk_")) {
+    return res.status(400).json({ error: "Invalid Groq API key format. Key should start with 'gsk_'." });
+  }
+  const client = userKey
+    ? new OpenAI({ apiKey: userKey, baseURL: "https://api.groq.com/openai/v1" })
+    : serverClient;
+
+  if (!client) {
+    return res.status(400).json({ error: "No Groq API key provided. Add your key to enable AI scoring." });
   }
 
   const qa = QUESTIONS.map((q, i) => `Q${i + 1}: ${q}\nA${i + 1}: ${answers[i]}`).join("\n\n");
