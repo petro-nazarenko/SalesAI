@@ -1,48 +1,78 @@
-# SalesAI — SDR Assessment Tool
+# SalesAI - Recruiter + Candidate Assessment
 
-Single-page web app that evaluates SDR candidates with AI scoring.
+Single server + static frontend app for SDR candidate assessment with SQLite persistence.
 
-## What it does
+## Key improvements
 
-Candidate answers 5 sales-specific questions. AI scores responses 0–100 and returns:
-- Overall score + hiring recommendation (`Strong Hire / Hire / Consider / Reject`)
-- 2–3 sentence summary
-- Strengths and concerns
-- Dimension breakdown: Resilience, Drive, Process, Communication, Closing
+1. Persistence in SQLite for every saved assessment.
+2. Two modes in one `public/index.html`:
+- Recruiter dashboard (create session, custom questions, compare candidates).
+- Candidate flow via unique link `/?session=<token>`.
+3. Scoring transparency:
+- Rubric per dimension (`high/medium/low`).
+- Answer-level contributions showing which answer affected each dimension and why.
+4. Custom questions editable by recruiter before link sharing, stored as JSON.
+5. Groq API key is used only in browser (`sessionStorage`), never sent to server.
+6. Jest endpoint tests.
 
-## Stack
+## Tech
 
-- **Backend:** Node.js + Express
-- **Frontend:** React (CDN, no build step)
-- **AI:** Groq API — `llama-3.3-70b-versatile`
+- Backend: Node.js + Express + better-sqlite3
+- Frontend: plain HTML/CSS/JS (no build step)
+- AI scoring: direct browser call to Groq API (`llama-3.3-70b-versatile`)
 
-## Setup
+## Database
 
-```bash
-cp .env.example .env
-# Add your Groq API key to .env
-```
+### `sessions`
+- `id`
+- `token`
+- `title`
+- `date`
+- `questions_json`
 
-Get a free API key at [console.groq.com](https://console.groq.com).
+### `assessments`
+- `id`
+- `candidate_name`
+- `date`
+- `score`
+- `recommendation`
+- `dimension_scores` (JSON)
+- `answers` (JSON)
+- `session_token`
+- `rubric` (JSON)
+- `contributions` (JSON)
+- `summary`
+- `strengths` (JSON)
+- `concerns` (JSON)
 
 ## Run
 
 ```bash
-./start.sh
+npm install
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open `http://localhost:3000`.
 
-> **Note (Termux):** `/storage/emulated/0` is a fuse filesystem. Dependencies are installed to `~/salesai-deps/` automatically by `start.sh`.
+## Tests
+
+```bash
+npm test
+```
+
+Current tests cover:
+- creating recruiter sessions
+- retrieving a session by token
+- saving and reading full assessment payload with JSON fields
 
 ## API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/questions` | Returns the 5 assessment questions |
-| POST | `/api/score` | Scores candidate answers, returns JSON result |
-
-`POST /api/score` body:
-```json
-{ "answers": ["answer1", "answer2", "answer3", "answer4", "answer5"] }
-```
+| GET | `/api/questions` | Default question template |
+| POST | `/api/sessions` | Create recruiter session with custom questions |
+| GET | `/api/sessions` | List all sessions + aggregates |
+| GET | `/api/sessions/:token` | Candidate session payload |
+| POST | `/api/assessments` | Save final assessment |
+| GET | `/api/assessments` | List all assessments |
+| GET | `/api/assessments?session_token=<token>` | List by session |

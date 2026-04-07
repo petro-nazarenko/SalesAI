@@ -196,10 +196,10 @@ function render(rows) {
   const tbody = rows.map((r, i) => `
     <tr>
       <td class="date">${rows.length - i}</td>
-      <td class="name">${esc(r.name)}</td>
+      <td class="name">${esc(r.candidate_name || r.name)}</td>
       <td class="score">${r.score ?? "—"}</td>
       <td><span class="badge ${BADGE[r.recommendation] || "badge-consider"}">${esc(r.recommendation)}</span></td>
-      ${dimCols.map(d => `<td class="dim">${r[d] ?? "—"}</td>`).join("")}
+      ${dimCols.map(d => `<td class="dim">${r.dimension_scores?.[d] ?? r[d] ?? "—"}</td>`).join("")}
       <td class="date">${fmt(r.date)}</td>
     </tr>`).join("");
 

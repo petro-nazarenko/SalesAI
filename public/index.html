@@ -3,697 +3,830 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SalesAI — SDR Assessment</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <title>SalesAI - Recruiter + Candidate</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f2ea;
+      --ink: #1f2f2c;
+      --muted: #5f6f6b;
+      --paper: #fffdf8;
+      --line: #d6cfbf;
+      --brand: #0f766e;
+      --brand-strong: #0a4f4a;
+      --ok: #0c6b45;
+      --warn: #9a5a00;
+      --bad: #8e2f2f;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f1117;
-      color: #e2e8f0;
+      margin: 0;
+      font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(15, 118, 110, 0.12), transparent 40%),
+        radial-gradient(circle at 85% 0%, rgba(154, 90, 0, 0.16), transparent 35%),
+        var(--bg);
       min-height: 100vh;
     }
 
-    .container {
-      max-width: 760px;
+    .wrap {
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 40px 20px 80px;
+      padding: 26px 18px 70px;
     }
 
-    .nav {
+    .hero {
+      background: linear-gradient(130deg, #124440, #1a7069);
+      color: #fffdf8;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 30px rgba(20, 30, 28, 0.2);
+      animation: rise 450ms ease both;
+    }
+
+    .hero h1 { margin: 0; letter-spacing: 0.5px; font-size: 1.8rem; }
+    .hero p { margin: 6px 0 0; opacity: 0.92; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      animation: rise 500ms ease both;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .grid-1 {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+    }
+
+    h2, h3 { margin: 0 0 8px; }
+
+    .row {
       display: flex;
-      justify-content: flex-end;
-      margin-bottom: 8px;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
-    .nav a {
-      color: #60a5fa;
-      font-size: 0.85rem;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .nav a:hover { text-decoration: underline; }
-
-    .header {
-      text-align: center;
-      margin-bottom: 48px;
-    }
-
-    .header h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #60a5fa, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .header p {
-      color: #94a3b8;
-      margin-top: 8px;
-      font-size: 0.95rem;
-    }
-
-    .progress-bar {
-      background: #1e2537;
-      border-radius: 99px;
-      height: 4px;
-      margin-bottom: 36px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #60a5fa, #a78bfa);
-      border-radius: 99px;
-      transition: width 0.4s ease;
-    }
-
-    .question-card {
-      background: #1a1f2e;
-      border: 1px solid #2d3448;
-      border-radius: 16px;
-      padding: 32px;
-      margin-bottom: 24px;
-    }
-
-    .question-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: #60a5fa;
-      margin-bottom: 12px;
-    }
-
-    .question-text {
-      font-size: 1.05rem;
-      line-height: 1.6;
-      color: #e2e8f0;
-      margin-bottom: 20px;
-    }
-
+    input[type="text"],
+    input[type="password"],
     textarea {
       width: 100%;
-      background: #0f1117;
-      border: 1px solid #2d3448;
+      border: 1px solid var(--line);
       border-radius: 10px;
-      color: #e2e8f0;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      padding: 14px 16px;
-      resize: vertical;
-      min-height: 110px;
-      transition: border-color 0.2s;
-      font-family: inherit;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #fffcf4;
     }
 
-    textarea:focus { outline: none; border-color: #60a5fa; }
-    textarea::placeholder { color: #4a5568; }
+    textarea { min-height: 78px; resize: vertical; }
 
-    .char-count {
-      text-align: right;
-      font-size: 0.75rem;
-      color: #4a5568;
-      margin-top: 6px;
+    input:focus, textarea:focus {
+      outline: 2px solid rgba(15, 118, 110, 0.28);
+      border-color: var(--brand);
     }
 
     .btn {
-      display: block;
-      width: 100%;
-      padding: 16px;
       border: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-
-    .btn:active { transform: scale(0.99); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #60a5fa, #a78bfa);
-      color: #fff;
-    }
-
-    .btn-primary:hover:not(:disabled) { opacity: 0.9; }
-
-    /* Name prompt */
-    .name-card {
-      background: #1a1f2e;
-      border: 1px solid #2d3448;
-      border-radius: 16px;
-      padding: 40px 32px;
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .name-card h2 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .name-card p {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-bottom: 24px;
-    }
-
-    .name-input {
-      width: 100%;
-      background: #0f1117;
-      border: 1px solid #2d3448;
       border-radius: 10px;
-      color: #e2e8f0;
-      font-size: 1rem;
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      font-family: inherit;
-      transition: border-color 0.2s;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
     }
 
-    .name-input:focus { outline: none; border-color: #60a5fa; }
-    .name-input::placeholder { color: #4a5568; }
+    .btn:hover { opacity: 0.92; }
+    .btn:active { transform: translateY(1px); }
+    .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
 
-    /* Results */
-    .result-card {
-      background: #1a1f2e;
-      border: 1px solid #2d3448;
-      border-radius: 16px;
-      padding: 32px;
-      margin-bottom: 24px;
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-subtle { background: #e7e1d3; color: var(--ink); }
+    .btn-danger { background: #d47f7f; color: #fff; }
+
+    .small { font-size: 0.9rem; color: var(--muted); }
+    .error { color: #a62525; font-weight: 700; }
+    .ok { color: #0f5a3f; font-weight: 700; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
     }
 
-    .result-candidate {
-      text-align: center;
-      font-size: 0.85rem;
-      color: #64748b;
-      margin-bottom: 20px;
-      letter-spacing: 0.5px;
+    th, td {
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      padding: 9px 6px;
+      vertical-align: top;
     }
 
-    .score-ring {
-      text-align: center;
-      margin-bottom: 28px;
-    }
+    th { color: var(--muted); font-size: 0.82rem; text-transform: uppercase; }
 
-    .score-number {
-      font-size: 4rem;
+    .score {
       font-weight: 800;
-      line-height: 1;
-      background: linear-gradient(135deg, #60a5fa, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--brand-strong);
+      font-size: 1.2rem;
     }
-
-    .score-label { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
 
     .badge {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
       display: inline-block;
-      padding: 6px 16px;
-      border-radius: 99px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      margin-top: 12px;
     }
 
-    .badge-strong  { background: #064e3b; color: #6ee7b7; }
-    .badge-hire    { background: #1e3a5f; color: #93c5fd; }
-    .badge-consider { background: #3b2f10; color: #fcd34d; }
-    .badge-reject  { background: #4c1414; color: #fca5a5; }
+    .b-strong-hire { background: #d6f5e8; color: var(--ok); }
+    .b-hire { background: #dcf1f8; color: #115978; }
+    .b-consider { background: #fff2d1; color: var(--warn); }
+    .b-reject { background: #f9dcdc; color: var(--bad); }
 
-    .summary {
-      color: #cbd5e1;
-      line-height: 1.7;
-      margin-bottom: 24px;
-      font-size: 0.95rem;
+    .mono { font-family: "Courier New", monospace; font-size: 0.9rem; }
+
+    .qitem {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #fffaf0;
     }
 
-    .section-title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #64748b;
-      margin-bottom: 10px;
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
-    .tag { padding: 4px 12px; border-radius: 99px; font-size: 0.82rem; }
-    .tag-strength { background: #0d2b1f; color: #6ee7b7; border: 1px solid #064e3b; }
-    .tag-concern  { background: #2b0d0d; color: #fca5a5; border: 1px solid #4c1414; }
-
-    .dims { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    .dim-label {
-      font-size: 0.8rem;
-      color: #94a3b8;
-      margin-bottom: 5px;
+    .qhead {
       display: flex;
       justify-content: space-between;
-    }
-
-    .dim-bar { background: #0f1117; border-radius: 99px; height: 6px; overflow: hidden; }
-    .dim-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #60a5fa, #a78bfa); }
-
-    .error-box {
-      background: #2b0d0d;
-      border: 1px solid #4c1414;
-      border-radius: 12px;
-      color: #fca5a5;
-      padding: 16px 20px;
-      margin-bottom: 20px;
-      font-size: 0.9rem;
-    }
-
-    .loading { text-align: center; padding: 60px 20px; }
-
-    .spinner {
-      width: 44px;
-      height: 44px;
-      border: 3px solid #2d3448;
-      border-top-color: #60a5fa;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading p { color: #64748b; font-size: 0.9rem; }
-
-    .btn-restart {
-      background: #1e2537;
-      color: #94a3b8;
-      border: 1px solid #2d3448;
-      margin-top: 8px;
-    }
-
-    .btn-restart:hover { background: #2d3448; color: #e2e8f0; }
-
-    .saved-notice {
-      text-align: center;
-      font-size: 0.82rem;
-      color: #6ee7b7;
-      margin-top: 12px;
-    }
-
-    .api-key-section {
-      background: #1a1f2e;
-      border: 1px solid #2d3448;
-      border-radius: 16px;
-      padding: 24px 28px;
-      margin-bottom: 32px;
-    }
-
-    .api-key-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #e2e8f0;
-      margin-bottom: 10px;
-      display: flex;
       align-items: center;
-      gap: 8px;
+      margin-bottom: 6px;
     }
 
-    .api-key-link {
-      color: #60a5fa;
-      font-size: 0.8rem;
-      font-weight: 400;
-      text-decoration: none;
+    .pill {
+      background: #e9f4f3;
+      color: var(--brand-strong);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.74rem;
+      font-weight: 700;
     }
 
-    .api-key-link:hover { text-decoration: underline; }
-
-    .api-key-input {
-      width: 100%;
-      background: #0f1117;
-      border: 1px solid #2d3448;
-      border-radius: 10px;
-      color: #e2e8f0;
-      font-size: 0.92rem;
-      padding: 12px 16px;
-      font-family: monospace;
-      letter-spacing: 0.03em;
-      transition: border-color 0.2s;
+    .contrib {
+      border-left: 4px solid #d7e6df;
+      margin: 8px 0;
+      padding: 8px 10px;
+      background: #faf8f0;
+      border-radius: 8px;
     }
 
-    .api-key-input:focus { outline: none; border-color: #60a5fa; }
-    .api-key-input::placeholder { color: #4a5568; font-family: inherit; letter-spacing: 0; }
-
-    .api-key-toggle {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #64748b;
-      cursor: pointer;
-      font-size: 0.78rem;
-      padding: 2px 4px;
-      font-family: inherit;
-    }
-
-    .api-key-toggle:hover { color: #94a3b8; }
-
-    .api-key-wrap {
-      position: relative;
-    }
-
-    .no-key-notice {
-      text-align: center;
-      color: #fcd34d;
-      background: #3b2f10;
-      border: 1px solid #78500a;
-      border-radius: 10px;
-      padding: 12px 16px;
+    .compare-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 0;
       font-size: 0.88rem;
-      margin-bottom: 16px;
     }
 
-    @media (max-width: 480px) {
-      .dims { grid-template-columns: 1fr; }
-      .score-number { font-size: 3rem; }
+    @media (max-width: 840px) {
+      .grid { grid-template-columns: 1fr; }
+      .compare-row { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.45rem; }
     }
   </style>
 </head>
 <body>
-<div id="root"></div>
-
-<script type="text/babel">
-const { useState, useEffect, useRef } = React;
-
-const BADGE = {
-  "Strong Hire": "badge-strong",
-  "Hire": "badge-hire",
-  "Consider": "badge-consider",
-  "Reject": "badge-reject",
-};
-
-function DimBar({ label, value }) {
-  return (
-    <div className="dim-item">
-      <div className="dim-label">
-        <span>{label}</span>
-        <span>{value}</span>
-      </div>
-      <div className="dim-bar">
-        <div className="dim-fill" style={{ width: `${value}%` }} />
-      </div>
+  <div class="wrap">
+    <div class="hero">
+      <h1>SalesAI Assessment Studio</h1>
+      <p>Recruiter dashboard + candidate assessment sessions with transparent scoring.</p>
     </div>
-  );
-}
 
-// Screens: "form" | "scoring" | "name" | "result"
-function App() {
-  const [questions, setQuestions]   = useState([]);
-  const [answers, setAnswers]       = useState([]);
-  const [screen, setScreen]         = useState("form");
-  const [pendingResult, setPending] = useState(null);
-  const [candidateName, setName]    = useState("");
-  const [result, setResult]         = useState(null);
-  const [error, setError]           = useState(null);
-  const [loadingQ, setLoadingQ]     = useState(true);
-  const [saved, setSaved]           = useState(false);
-  const [groqKey, setGroqKey]       = useState(() => sessionStorage.getItem("groqApiKey") || "");
-  const [showKey, setShowKey]       = useState(false);
+    <div id="app"></div>
+  </div>
 
-  useEffect(() => {
-    fetch("/api/questions")
-      .then(r => r.json())
-      .then(d => {
-        setQuestions(d.questions);
-        setAnswers(new Array(d.questions.length).fill(""));
-        setLoadingQ(false);
-      })
-      .catch(() => {
-        setError("Failed to load questions.");
-        setLoadingQ(false);
-      });
-  }, []);
+<script>
+(function () {
+  const DIMENSIONS = ["resilience", "drive", "process", "communication", "closing"];
+  const BADGE_CLS = {
+    "Strong Hire": "b-strong-hire",
+    "Hire": "b-hire",
+    "Consider": "b-consider",
+    "Reject": "b-reject",
+  };
 
-  const filled = answers.filter(a => a.trim().length >= 20).length;
-  const allFilled = questions.length > 0 && filled === questions.length;
-  const trimmedKey = groqKey.trim();
-  const hasKey = trimmedKey.length > 0 && trimmedKey.startsWith("gsk_");
-  const keyInvalid = trimmedKey.length > 0 && !trimmedKey.startsWith("gsk_");
-  const progress = questions.length ? (filled / questions.length) * 100 : 0;
+  const state = {
+    mode: "recruiter",
+    sessionToken: null,
+    session: null,
+    sessions: [],
+    assessments: [],
+    questionsDraft: [
+      "Walk me through how you'd handle a cold call where the prospect says 'I'm not interested' in the first 10 seconds.",
+      "It's 3pm. You have a quota of 50 calls today and you've only made 15. What do you do?",
+      "How would you research a prospect before reaching out? Walk me through your full process.",
+      "Describe a time you turned a 'no' into a 'yes' - or explain exactly how you would.",
+      "A warm prospect went dark after two promising calls. What's your follow-up strategy?",
+    ],
+    titleDraft: "SDR Intake Session",
+    createFeedback: "",
+    error: "",
+    keyVisible: false,
+    key: sessionStorage.getItem("groqApiKey") || "",
+    candidateName: "",
+    answers: [],
+    loading: false,
+    result: null,
+    selectedAssessmentId: null,
+  };
 
-  function handleKeyChange(e) {
-    const val = e.target.value;
-    setGroqKey(val);
-    sessionStorage.setItem("groqApiKey", val);
+  const app = document.getElementById("app");
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
 
-  async function handleSubmit() {
-    setError(null);
-    setScreen("scoring");
-    try {
-      const res = await fetch("/api/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers, groqApiKey: groqKey.trim() }),
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) +
+      " " +
+      d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function currentSelectedAssessment() {
+    if (!state.selectedAssessmentId) return state.assessments[0] || null;
+    return state.assessments.find((a) => a.id === state.selectedAssessmentId) || state.assessments[0] || null;
+  }
+
+  function parseJsonFromModelText(text) {
+    const clean = String(text || "").trim();
+    const block = clean.match(/\{[\s\S]*\}$/);
+    if (block) {
+      return JSON.parse(block[0]);
+    }
+    return JSON.parse(clean);
+  }
+
+  async function api(path, options) {
+    const res = await fetch(path, options);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Request failed");
+    return data;
+  }
+
+  function scoringPrompt(questions, answers) {
+    const qa = questions.map((q, i) => `Q${i + 1}: ${q}\nA${i + 1}: ${answers[i]}`).join("\n\n");
+
+    return `You are a sales hiring expert evaluating an SDR candidate.
+
+Score the candidate 0-100 and return a recommendation.
+Dimensions:
+- resilience
+- drive
+- process
+- communication
+- closing
+
+Also include full transparency:
+1) A rubric object that explains what high/medium/low means for each dimension.
+2) A contributions object that lists which answers (by index) helped or hurt each dimension.
+
+Candidate responses:
+${qa}
+
+Return ONLY valid JSON in this exact schema:
+{
+  "score": 0,
+  "recommendation": "Strong Hire",
+  "summary": "",
+  "strengths": [""],
+  "concerns": [""],
+  "dimension_scores": {
+    "resilience": 0,
+    "drive": 0,
+    "process": 0,
+    "communication": 0,
+    "closing": 0
+  },
+  "rubric": {
+    "resilience": { "high": "", "medium": "", "low": "" },
+    "drive": { "high": "", "medium": "", "low": "" },
+    "process": { "high": "", "medium": "", "low": "" },
+    "communication": { "high": "", "medium": "", "low": "" },
+    "closing": { "high": "", "medium": "", "low": "" }
+  },
+  "contributions": {
+    "resilience": [{ "answer_index": 1, "impact": "positive", "reason": "" }],
+    "drive": [{ "answer_index": 1, "impact": "positive", "reason": "" }],
+    "process": [{ "answer_index": 1, "impact": "positive", "reason": "" }],
+    "communication": [{ "answer_index": 1, "impact": "positive", "reason": "" }],
+    "closing": [{ "answer_index": 1, "impact": "positive", "reason": "" }]
+  }
+}`;
+  }
+
+  async function groqScore(questions, answers) {
+    const key = (state.key || "").trim();
+    if (!key || !key.startsWith("gsk_")) {
+      throw new Error("Set a valid Groq key in this browser session before scoring.");
+    }
+
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.2,
+        max_tokens: 1000,
+        messages: [{ role: "user", content: scoringPrompt(questions, answers) }],
+      }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      const msg = payload.error && payload.error.message ? payload.error.message : "Groq request failed.";
+      throw new Error(msg);
+    }
+
+    const raw = payload.choices && payload.choices[0] && payload.choices[0].message
+      ? payload.choices[0].message.content
+      : "";
+    const parsed = parseJsonFromModelText(raw);
+
+    if (!parsed.dimension_scores || typeof parsed.dimension_scores !== "object") {
+      throw new Error("Model response is missing dimension_scores.");
+    }
+
+    return parsed;
+  }
+
+  async function loadRecruiterData() {
+    const [sessions, assessments] = await Promise.all([
+      api("/api/sessions"),
+      api("/api/assessments"),
+    ]);
+    state.sessions = sessions;
+    state.assessments = assessments;
+  }
+
+  async function loadCandidateSession(token) {
+    state.session = await api(`/api/sessions/${encodeURIComponent(token)}`);
+    state.answers = new Array(state.session.questions.length).fill("");
+  }
+
+  function renderQuestionEditor() {
+    return `
+      <div class="card">
+        <h3>Create Assessment Session</h3>
+        <p class="small">Recruiter can customize questions before sharing a unique candidate link.</p>
+        <div style="margin:10px 0;">
+          <label class="small">Session title</label>
+          <input id="titleDraft" type="text" value="${esc(state.titleDraft)}" maxlength="80" />
+        </div>
+        <div id="questionList">
+          ${state.questionsDraft.map((q, idx) => `
+            <div class="qitem">
+              <div class="qhead">
+                <span class="pill">Question ${idx + 1}</span>
+                <button class="btn btn-danger" data-remove-q="${idx}">Remove</button>
+              </div>
+              <textarea data-q-index="${idx}">${esc(q)}</textarea>
+            </div>
+          `).join("")}
+        </div>
+        <div class="row">
+          <button class="btn btn-subtle" id="addQuestionBtn">+ Add Question</button>
+          <button class="btn btn-primary" id="createSessionBtn">Create Session Link</button>
+        </div>
+        ${state.createFeedback ? `<p class="ok" style="margin-top:8px;">${esc(state.createFeedback)}</p>` : ""}
+      </div>
+    `;
+  }
+
+  function renderSessionsTable() {
+    return `
+      <div class="card">
+        <h3>Recruiter Dashboard</h3>
+        <p class="small">All sessions and candidate volume.</p>
+        ${state.sessions.length === 0 ? "<p class='small'>No sessions yet.</p>" : `
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Title</th>
+                <th>Candidates</th>
+                <th>Avg Score</th>
+                <th>Link</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${state.sessions.map((s) => `
+                <tr>
+                  <td>${esc(fmtDate(s.date))}</td>
+                  <td>${esc(s.title || "Untitled")}</td>
+                  <td>${esc(s.candidate_count)}</td>
+                  <td>${s.avg_score == null ? "-" : esc(s.avg_score)}</td>
+                  <td><button class="btn btn-subtle" data-copy-link="${esc(s.link)}">Copy Link</button></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `}
+      </div>
+    `;
+  }
+
+  function renderAssessmentList() {
+    return `
+      <div class="card">
+        <h3>All Candidates</h3>
+        <p class="small">Compare all saved assessments across sessions.</p>
+        ${state.assessments.length === 0 ? "<p class='small'>No saved assessments yet.</p>" : `
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Candidate</th>
+                <th>Score</th>
+                <th>Recommendation</th>
+                <th>Session</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${state.assessments.map((a) => `
+                <tr>
+                  <td>${esc(fmtDate(a.date))}</td>
+                  <td><button class="btn btn-subtle" data-select-assessment="${a.id}">${esc(a.candidate_name)}</button></td>
+                  <td class="score">${esc(a.score)}</td>
+                  <td><span class="badge ${BADGE_CLS[a.recommendation] || "b-consider"}">${esc(a.recommendation)}</span></td>
+                  <td class="mono">${esc(a.session_token || "-")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `}
+      </div>
+    `;
+  }
+
+  function renderTransparencyCard(assessment) {
+    if (!assessment) {
+      return "<div class='card'><h3>Scoring Transparency</h3><p class='small'>Select a candidate to inspect rubric and score contributions.</p></div>";
+    }
+
+    return `
+      <div class="card">
+        <h3>Scoring Transparency: ${esc(assessment.candidate_name)}</h3>
+        <p class="small">Saved rubric and answer-level contribution per dimension.</p>
+        ${DIMENSIONS.map((dim) => {
+          const rubric = assessment.rubric && assessment.rubric[dim] ? assessment.rubric[dim] : null;
+          const list = assessment.contributions && Array.isArray(assessment.contributions[dim])
+            ? assessment.contributions[dim]
+            : [];
+          return `
+            <div style="margin:12px 0; padding:10px; border:1px solid var(--line); border-radius:10px;">
+              <div class="row" style="justify-content:space-between;">
+                <strong>${esc(dim.charAt(0).toUpperCase() + dim.slice(1))}</strong>
+                <span class="pill">Score: ${esc(assessment.dimension_scores && assessment.dimension_scores[dim] != null ? assessment.dimension_scores[dim] : "-")}</span>
+              </div>
+              ${rubric ? `
+                <div class="small" style="margin-top:6px;">
+                  <div><b>High:</b> ${esc(rubric.high || "-")}</div>
+                  <div><b>Medium:</b> ${esc(rubric.medium || "-")}</div>
+                  <div><b>Low:</b> ${esc(rubric.low || "-")}</div>
+                </div>
+              ` : "<div class='small'>No rubric data.</div>"}
+              <div style="margin-top:8px;">
+                ${list.length === 0 ? "<div class='small'>No contribution details.</div>" : list.map((item) => {
+                  const idx = Number(item.answer_index) - 1;
+                  const ans = assessment.answers && idx >= 0 ? assessment.answers[idx] : "";
+                  return `
+                    <div class="contrib">
+                      <div><b>Answer #${esc(item.answer_index)}</b> (${esc(item.impact || "neutral")})</div>
+                      <div class="small">${esc(item.reason || "No reason")}</div>
+                      <div class="small" style="margin-top:4px;"><b>Answer text:</b> ${esc(ans || "-")}</div>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function renderComparisons() {
+    if (state.assessments.length < 2) {
+      return "<div class='card'><h3>Candidate Comparison</h3><p class='small'>Need at least 2 candidates to compare dimensions.</p></div>";
+    }
+
+    const sorted = [...state.assessments].sort((a, b) => b.score - a.score).slice(0, 8);
+
+    return `
+      <div class="card">
+        <h3>Top Candidate Comparison</h3>
+        <div class="compare-row"><strong>Candidate</strong><strong>Overall</strong><strong>Dimension Highlights</strong></div>
+        ${sorted.map((a) => {
+          const dim = a.dimension_scores || {};
+          const highlight = DIMENSIONS.map((d) => `${d.slice(0, 4)}:${dim[d] == null ? "-" : dim[d]}`).join(" | ");
+          return `<div class="compare-row"><span>${esc(a.candidate_name)}</span><span>${esc(a.score)}</span><span class="small">${esc(highlight)}</span></div>`;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function renderRecruiter() {
+    const selected = currentSelectedAssessment();
+    return `
+      <div class="grid">
+        <div>
+          ${renderQuestionEditor()}
+          ${renderSessionsTable()}
+        </div>
+        <div>
+          ${renderAssessmentList()}
+          ${renderComparisons()}
+          ${renderTransparencyCard(selected)}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCandidateForm() {
+    const session = state.session;
+    const answered = state.answers.filter((a) => String(a).trim().length >= 20).length;
+    const canScore = state.candidateName.trim().length > 1 && answered === session.questions.length && state.key.trim().startsWith("gsk_");
+
+    return `
+      <div class="grid-1">
+        <div class="card">
+          <h2>Candidate Assessment</h2>
+          <p class="small">Session: ${esc(session.title || "Untitled")}</p>
+          <p class="small mono">Token: ${esc(session.token)}</p>
+        </div>
+
+        <div class="card">
+          <h3>Groq API key (browser only)</h3>
+          <p class="small">Stored in sessionStorage. Never sent to server.</p>
+          <div class="row">
+            <input id="groqKeyInput" type="${state.keyVisible ? "text" : "password"}" value="${esc(state.key)}" placeholder="gsk_..." />
+            <button class="btn btn-subtle" id="toggleKeyBtn">${state.keyVisible ? "Hide" : "Show"}</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Candidate details</h3>
+          <input id="candidateNameInput" type="text" value="${esc(state.candidateName)}" placeholder="Candidate full name" maxlength="80" />
+        </div>
+
+        ${session.questions.map((q, idx) => `
+          <div class="card">
+            <div class="row" style="justify-content: space-between;">
+              <h3>Question ${idx + 1}</h3>
+              <span class="pill">${esc(String(state.answers[idx] || "").length)} chars</span>
+            </div>
+            <p>${esc(q)}</p>
+            <textarea data-answer-index="${idx}" placeholder="Minimum 20 characters">${esc(state.answers[idx] || "")}</textarea>
+          </div>
+        `).join("")}
+
+        <div class="card">
+          <p class="small">Answered: ${answered} / ${session.questions.length}</p>
+          ${state.error ? `<p class="error">${esc(state.error)}</p>` : ""}
+          <button class="btn btn-primary" id="submitCandidateBtn" ${canScore ? "" : "disabled"}>Score and save assessment</button>
+        </div>
+
+        ${state.loading ? `<div class="card"><p>Scoring with Groq...</p></div>` : ""}
+        ${state.result ? renderCandidateResult(state.result) : ""}
+      </div>
+    `;
+  }
+
+  function renderCandidateResult(result) {
+    return `
+      <div class="card">
+        <h3>Assessment Result</h3>
+        <div class="score">${esc(result.score)} / 100</div>
+        <p><span class="badge ${BADGE_CLS[result.recommendation] || "b-consider"}">${esc(result.recommendation)}</span></p>
+        <p>${esc(result.summary || "")}</p>
+        <h3>Dimension scores</h3>
+        <div class="row">${DIMENSIONS.map((d) => `<span class="pill">${esc(d)}: ${esc(result.dimension_scores && result.dimension_scores[d] != null ? result.dimension_scores[d] : "-")}</span>`).join("")}</div>
+        <h3 style="margin-top:12px;">Scoring rubric</h3>
+        <div class="small">${DIMENSIONS.map((d) => {
+          const r = result.rubric && result.rubric[d] ? result.rubric[d] : {};
+          return `<div style='margin-bottom:6px;'><b>${esc(d)}:</b> high=${esc(r.high || "-")}; medium=${esc(r.medium || "-")}; low=${esc(r.low || "-")}</div>`;
+        }).join("")}</div>
+      </div>
+    `;
+  }
+
+  function bindRecruiterEvents() {
+    const titleInput = document.getElementById("titleDraft");
+    if (titleInput) {
+      titleInput.addEventListener("input", (e) => {
+        state.titleDraft = e.target.value;
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Unknown error");
-      setPending(data);
-      setScreen("name");
-    } catch (e) {
-      setError(e.message);
-      setScreen("form");
+    }
+
+    document.querySelectorAll("textarea[data-q-index]").forEach((el) => {
+      el.addEventListener("input", (e) => {
+        const idx = Number(e.target.getAttribute("data-q-index"));
+        state.questionsDraft[idx] = e.target.value;
+      });
+    });
+
+    document.querySelectorAll("button[data-remove-q]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const idx = Number(e.target.getAttribute("data-remove-q"));
+        state.questionsDraft.splice(idx, 1);
+        rerender();
+      });
+    });
+
+    const addBtn = document.getElementById("addQuestionBtn");
+    if (addBtn) {
+      addBtn.addEventListener("click", () => {
+        state.questionsDraft.push("Add a custom sales question here...");
+        rerender();
+      });
+    }
+
+    const createBtn = document.getElementById("createSessionBtn");
+    if (createBtn) {
+      createBtn.addEventListener("click", async () => {
+        try {
+          const payload = {
+            title: state.titleDraft,
+            questions: state.questionsDraft,
+          };
+          const out = await api("/api/sessions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          state.createFeedback = `Session created. Link copied: ${out.link}`;
+          await navigator.clipboard.writeText(out.link).catch(() => {});
+          await loadRecruiterData();
+          state.selectedAssessmentId = state.assessments[0] ? state.assessments[0].id : null;
+          rerender();
+        } catch (err) {
+          state.error = err.message;
+          rerender();
+        }
+      });
+    }
+
+    document.querySelectorAll("button[data-copy-link]").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        const link = e.target.getAttribute("data-copy-link");
+        await navigator.clipboard.writeText(link).catch(() => {});
+        state.createFeedback = `Copied: ${link}`;
+        rerender();
+      });
+    });
+
+    document.querySelectorAll("button[data-select-assessment]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        state.selectedAssessmentId = Number(e.target.getAttribute("data-select-assessment"));
+        rerender();
+      });
+    });
+  }
+
+  function bindCandidateEvents() {
+    const keyInput = document.getElementById("groqKeyInput");
+    if (keyInput) {
+      keyInput.addEventListener("input", (e) => {
+        state.key = e.target.value;
+        sessionStorage.setItem("groqApiKey", state.key);
+      });
+    }
+
+    const toggleBtn = document.getElementById("toggleKeyBtn");
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => {
+        state.keyVisible = !state.keyVisible;
+        rerender();
+      });
+    }
+
+    const nameInput = document.getElementById("candidateNameInput");
+    if (nameInput) {
+      nameInput.addEventListener("input", (e) => {
+        state.candidateName = e.target.value;
+      });
+    }
+
+    document.querySelectorAll("textarea[data-answer-index]").forEach((el) => {
+      el.addEventListener("input", (e) => {
+        const idx = Number(e.target.getAttribute("data-answer-index"));
+        state.answers[idx] = e.target.value;
+        rerender();
+      });
+    });
+
+    const submit = document.getElementById("submitCandidateBtn");
+    if (submit) {
+      submit.addEventListener("click", async () => {
+        state.error = "";
+        state.loading = true;
+        rerender();
+        try {
+          const result = await groqScore(state.session.questions, state.answers);
+          await api("/api/assessments", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              candidate_name: state.candidateName.trim(),
+              session_token: state.session.token,
+              answers: state.answers,
+              score: result.score,
+              recommendation: result.recommendation,
+              summary: result.summary,
+              strengths: result.strengths,
+              concerns: result.concerns,
+              dimension_scores: result.dimension_scores,
+              rubric: result.rubric,
+              contributions: result.contributions,
+            }),
+          });
+          state.result = result;
+        } catch (err) {
+          state.error = err.message;
+        } finally {
+          state.loading = false;
+          rerender();
+        }
+      });
     }
   }
 
-  async function handleSave() {
-    if (!candidateName.trim()) return;
+  function rerender() {
+    state.error = state.error || "";
+    if (state.mode === "candidate") {
+      app.innerHTML = renderCandidateForm();
+      bindCandidateEvents();
+      return;
+    }
+
+    app.innerHTML = `
+      ${state.error ? `<div class="card"><p class="error">${esc(state.error)}</p></div>` : ""}
+      ${renderRecruiter()}
+    `;
+    bindRecruiterEvents();
+  }
+
+  async function init() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("session");
+    if (token) {
+      state.mode = "candidate";
+      state.sessionToken = token;
+      try {
+        await loadCandidateSession(token);
+      } catch (err) {
+        app.innerHTML = `<div class='card'><p class='error'>${esc(err.message)}</p><p class='small'>Invalid or expired session link.</p></div>`;
+        return;
+      }
+      rerender();
+      return;
+    }
+
+    state.mode = "recruiter";
     try {
-      await fetch("/api/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: candidateName.trim(), result: pendingResult }),
-      });
-      setSaved(true);
-    } catch (_) {}
-    setResult(pendingResult);
-    setScreen("result");
+      await loadRecruiterData();
+      state.selectedAssessmentId = state.assessments[0] ? state.assessments[0].id : null;
+      rerender();
+    } catch (err) {
+      state.error = err.message;
+      rerender();
+    }
   }
 
-  function handleRestart() {
-    setScreen("form");
-    setAnswers(new Array(questions.length).fill(""));
-    setResult(null);
-    setPending(null);
-    setName("");
-    setError(null);
-    setSaved(false);
-  }
-
-  if (loadingQ) return (
-    <div className="container">
-      <div className="loading"><div className="spinner" /><p>Loading assessment…</p></div>
-    </div>
-  );
-
-  return (
-    <div className="container">
-      <div className="nav">
-        <a href="/results.html">View All Results →</a>
-      </div>
-
-      <div className="header">
-        <h1>SalesAI Assessment</h1>
-        <p>SDR Candidate Evaluation — 5 Questions</p>
-      </div>
-
-      {/* FORM */}
-      {screen === "form" && (
-        <>
-          <div className="api-key-section">
-            <div className="api-key-label">
-              Enter your Groq API key
-              <a
-                className="api-key-link"
-                href="https://console.groq.com/keys"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Get free key at console.groq.com/keys ↗
-              </a>
-            </div>
-            <div className="api-key-wrap">
-              <input
-                className="api-key-input"
-                type={showKey ? "text" : "password"}
-                placeholder="gsk_…"
-                value={groqKey}
-                onChange={handleKeyChange}
-                autoComplete="off"
-                spellCheck="false"
-                style={keyInvalid ? { borderColor: "#f87171", paddingRight: "60px" } : { paddingRight: "60px" }}
-              />
-              <button
-                type="button"
-                className="api-key-toggle"
-                onClick={() => setShowKey(v => !v)}
-                tabIndex={-1}
-              >
-                {showKey ? "Hide" : "Show"}
-              </button>
-            </div>
-            {keyInvalid && (
-              <div style={{ color: "#f87171", fontSize: "0.78rem", marginTop: "6px" }}>
-                Key should start with <code>gsk_</code>
-              </div>
-            )}
-          </div>
-
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${progress}%` }} />
-          </div>
-
-          {error && <div className="error-box">{error}</div>}
-
-          {questions.map((q, i) => (
-            <div className="question-card" key={i}>
-              <div className="question-label">Question {i + 1} of {questions.length}</div>
-              <div className="question-text">{q}</div>
-              <textarea
-                placeholder="Type your answer here (min 20 characters)…"
-                value={answers[i]}
-                onChange={e => {
-                  const next = [...answers];
-                  next[i] = e.target.value;
-                  setAnswers(next);
-                }}
-              />
-              <div className="char-count">{answers[i].length} chars</div>
-            </div>
-          ))}
-
-          {!hasKey && (
-            <div className="no-key-notice">
-              Add your Groq key above to enable AI scoring
-            </div>
-          )}
-
-          <button className="btn btn-primary" disabled={!allFilled || !hasKey} onClick={handleSubmit}>
-            Submit & Score ({filled}/{questions.length} answered)
-          </button>
-        </>
-      )}
-
-      {/* SCORING */}
-      {screen === "scoring" && (
-        <div className="loading">
-          <div className="spinner" />
-          <p>AI is evaluating responses…</p>
-        </div>
-      )}
-
-      {/* NAME PROMPT */}
-      {screen === "name" && (
-        <div className="name-card">
-          <h2>Assessment complete</h2>
-          <p>Enter the candidate's name to save and view results.</p>
-          <input
-            className="name-input"
-            type="text"
-            placeholder="Full name (e.g. John Smith)"
-            value={candidateName}
-            onChange={e => setName(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && handleSave()}
-            autoFocus
-          />
-          <button
-            className="btn btn-primary"
-            disabled={!candidateName.trim()}
-            onClick={handleSave}
-          >
-            Save & View Results
-          </button>
-        </div>
-      )}
-
-      {/* RESULT */}
-      {screen === "result" && result && (
-        <>
-          <div className="result-card">
-            {candidateName && (
-              <div className="result-candidate">Candidate: {candidateName}</div>
-            )}
-            <div className="score-ring">
-              <div className="score-number">{result.score}</div>
-              <div className="score-label">Overall Score / 100</div>
-              <div>
-                <span className={`badge ${BADGE[result.recommendation] || "badge-consider"}`}>
-                  {result.recommendation}
-                </span>
-              </div>
-            </div>
-
-            <p className="summary">{result.summary}</p>
-
-            {result.strengths?.length > 0 && (
-              <>
-                <div className="section-title">Strengths</div>
-                <div className="tag-list">
-                  {result.strengths.map((s, i) => (
-                    <span key={i} className="tag tag-strength">{s}</span>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {result.concerns?.length > 0 && (
-              <>
-                <div className="section-title">Concerns</div>
-                <div className="tag-list">
-                  {result.concerns.map((c, i) => (
-                    <span key={i} className="tag tag-concern">{c}</span>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {result.dimension_scores && (
-              <>
-                <div className="section-title" style={{ marginTop: 8 }}>Dimension Scores</div>
-                <div className="dims">
-                  {Object.entries(result.dimension_scores).map(([k, v]) => (
-                    <DimBar key={k} label={k.charAt(0).toUpperCase() + k.slice(1)} value={v} />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          {saved && <div className="saved-notice">Saved to database</div>}
-          {error && <div className="error-box">{error}</div>}
-
-          <button className="btn btn-restart" onClick={handleRestart}>
-            Start New Assessment
-          </button>
-        </>
-      )}
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  init();
+})();
 </script>
 </body>
 </html>
