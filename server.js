@@ -81,7 +81,9 @@ const insertAssessmentStmt = db.prepare(`
 function parseJsonSafe(value, fallback) {
   if (!value) return fallback;
   try {
-    return JSON.parse(value);
+    const text = String(value);
+    const clean = text.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(clean);
   } catch {
     return fallback;
   }
